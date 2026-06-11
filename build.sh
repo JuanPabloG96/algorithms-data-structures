@@ -1,5 +1,8 @@
 #!/bin/bash
 
+mkdir -p build
+mkdir -p bin
+
 # clean and change directorie
 rm -rf build/*
 cd build
