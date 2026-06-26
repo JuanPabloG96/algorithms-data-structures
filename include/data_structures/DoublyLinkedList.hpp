@@ -10,7 +10,7 @@ template <typename T> struct Node
 
     Node() : next(nullptr), prev(nullptr) {}
 
-    Node(const T& value) : next(nullptr), prev(nullptr), data(value) {}
+    Node(const T& value) : data(value), next(nullptr), prev(nullptr) {}
 };
 
 template <typename T> class DoublyLinkedList
@@ -18,21 +18,69 @@ template <typename T> class DoublyLinkedList
 private:
     Node<T>* head;
     Node<T>* tail;
-    int listSize;
+    size_t list_size;
 
-public:
-    DoublyLinkedList() : head(nullptr), tail(nullptr), listSize(0) {}
-
-    ~DoublyLinkedList()
+    void removeNode(Node<T>* node)
     {
-        while (head)
+        if (!node)
+            return;
+
+        if (node == head)
+        {
+            removeFront();
+            return;
+        }
+
+        if (node == tail)
         {
             removeBack();
+            return;
         }
+
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+        delete node;
+        list_size--;
     }
 
+    Node<T>* getNodeAt(size_t index) const
+    {
+        if (index >= list_size)
+        {
+            std::cerr << "Error: index out of range." << std::endl;
+            return nullptr;
+        }
+
+        Node<T>* current;
+
+        if (index < list_size / 2)
+        {
+            current = head;
+            for (size_t i = 0; i < index; i++)
+            {
+                current = current->next;
+            }
+        }
+        else
+        {
+            current = tail;
+            for (size_t i = list_size - 1; i > index; i--)
+            {
+                current = current->prev;
+            }
+        }
+
+        return current;
+    }
+
+public:
+    // constructors rule of 5
+    DoublyLinkedList() : head(nullptr), tail(nullptr), list_size(0) {}
+
+    ~DoublyLinkedList() { clear(); }
+
     DoublyLinkedList(const DoublyLinkedList& other)
-        : head(nullptr), tail(nullptr), listSize(0)
+        : head(nullptr), tail(nullptr), list_size(0)
     {
         Node<T>* current = other.head;
 
@@ -61,11 +109,11 @@ public:
     }
 
     DoublyLinkedList(DoublyLinkedList&& other)
-        : head(other.head), tail(other.tail), listSize(other.listSize)
+        : head(other.head), tail(other.tail), list_size(other.list_size)
     {
         other.head = nullptr;
         other.tail = nullptr;
-        other.listSize = 0;
+        other.list_size = 0;
     }
 
     DoublyLinkedList<T>& operator=(DoublyLinkedList&& other)
@@ -77,23 +125,16 @@ public:
 
         head = other.head;
         tail = other.tail;
-        listSize = other.listSize;
+        list_size = other.list_size;
 
         other.head = nullptr;
         other.tail = nullptr;
-        other.listSize = 0;
+        other.list_size = 0;
 
         return *this;
     }
 
-    void clear()
-    {
-        while (head)
-        {
-            removeFront();
-        }
-    }
-
+    // insert methods
     void pushBack(const T& value)
     {
         Node<T>* newNode = new Node<T>(value);
@@ -109,7 +150,7 @@ public:
             newNode->prev = tail;
             tail = newNode;
         }
-        listSize++;
+        list_size++;
     }
 
     void pushFront(const T& value)
@@ -127,9 +168,42 @@ public:
             newNode->next = head;
             head = newNode;
         }
-        listSize++;
+        list_size++;
     }
 
+    void insert(size_t index, const T& value)
+    {
+        if (index > list_size)
+        {
+            std::cerr << "Error: index is out of range." << std::endl;
+            return;
+        }
+
+        if (index == 0)
+        {
+            pushFront(value);
+            return;
+        }
+
+        if (index == list_size)
+        {
+            pushBack(value);
+            return;
+        }
+
+        Node<T>* current = getNodeAt(index);
+
+        Node<T>* newNode = new Node<T>(value);
+
+        newNode->prev = current->prev;
+        newNode->next = current;
+
+        current->prev->next = newNode;
+        current->prev = newNode;
+        list_size++;
+    }
+
+    // remove methods
     void removeBack()
     {
         if (!head)
@@ -148,7 +222,7 @@ public:
             tail->next = nullptr;
             delete temp;
         }
-        listSize--;
+        list_size--;
     }
 
     void removeFront()
@@ -169,10 +243,60 @@ public:
             head->prev = nullptr;
             delete temp;
         }
-        listSize--;
+        list_size--;
     }
 
-    void print()
+    bool remove(const T& value)
+    {
+        Node<T>* node = find(value);
+
+        if (!node)
+            return false;
+
+        removeNode(node);
+        return true;
+    }
+
+    bool erase(size_t index)
+    {
+        Node<T>* node = getNodeAt(index);
+
+        if (!node)
+            return false;
+
+        removeNode(node);
+        return true;
+    }
+
+    // search methods
+    Node<T>* find(const T& value) const
+    {
+        Node<T>* current = head;
+        while (current)
+        {
+            if (current->data == value)
+                return current;
+            current = current->next;
+        }
+        return nullptr;
+    }
+
+    bool contains(const T& value) const { return find(value) != nullptr; }
+
+    // utilities
+    void clear()
+    {
+        while (head)
+        {
+            removeFront();
+        }
+    }
+
+    bool empty() const { return list_size == 0; }
+
+    size_t size() const { return list_size; }
+
+    void print() const
     {
         Node<T>* current = head;
 
@@ -180,6 +304,19 @@ public:
         {
             std::cout << current->data << " ";
             current = current->next;
+        }
+
+        std::cout << std::endl;
+    }
+
+    void printReverse() const
+    {
+        Node<T>* current = tail;
+
+        while (current)
+        {
+            std::cout << current->data << " ";
+            current = current->prev;
         }
 
         std::cout << std::endl;
