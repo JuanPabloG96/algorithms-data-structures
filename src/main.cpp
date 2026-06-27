@@ -1,93 +1,100 @@
-#include "data_structures/DoublyLinkedList.hpp"
-
-#include <iostream>
+#include "data_structures/LinkedList.hpp"
 
 int main()
 {
-    std::cout << "=== Creating list1 ===\n";
+    LinkedList<int> list;
 
-    DoublyLinkedList<int> list1;
+    // Test pushBack
+    std::cout << "=== Test pushBack ===" << std::endl;
+    list.pushBack(10);
+    list.pushBack(20);
+    list.pushBack(30);
+    list.pushBack(40);
+    std::cout << "Lista después de pushBack: ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    list1.pushBack(10);
-    list1.pushBack(20);
-    list1.pushBack(30);
+    // Test pushFront
+    std::cout << "\n=== Test pushFront ===" << std::endl;
+    list.pushFront(5);
+    std::cout << "Lista después de pushFront(5): ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    list1.pushFront(5);
-    list1.pushFront(1);
+    // Test insert
+    std::cout << "\n=== Test insert ===" << std::endl;
+    list.insert(2, 15);
+    std::cout << "Lista después de insert(2, 15): ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    list1.print();
+    // Test contains
+    std::cout << "\n=== Test contains ===" << std::endl;
+    std::cout << "¿Contiene 20? " << (list.contains(20) ? "Sí" : "No")
+              << std::endl;
+    std::cout << "¿Contiene 100? " << (list.contains(100) ? "Sí" : "No")
+              << std::endl;
 
-    std::cout << "\n=== Testing removeFront ===\n";
+    // Test find
+    std::cout << "\n=== Test find ===" << std::endl;
+    if (list.find(15))
+        std::cout << "Encontrado: 15" << std::endl;
 
-    list1.removeFront();
-    list1.print();
+    // Test removeFront
+    std::cout << "\n=== Test removeFront ===" << std::endl;
+    list.removeFront();
+    std::cout << "Lista después de removeFront: ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    std::cout << "\n=== Testing removeBack ===\n";
+    // Test removeBack
+    std::cout << "\n=== Test removeBack ===" << std::endl;
+    list.removeBack();
+    std::cout << "Lista después de removeBack: ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    list1.removeBack();
-    list1.print();
+    // Test remove (por valor)
+    std::cout << "\n=== Test remove ===" << std::endl;
+    bool removed = list.remove(15);
+    std::cout << "¿Se removió 15? " << (removed ? "Sí" : "No") << std::endl;
+    std::cout << "Lista después de remove(15): ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    std::cout << "\n=== Testing Copy Constructor ===\n";
+    // Test erase (por índice)
+    std::cout << "\n=== Test erase ===" << std::endl;
+    bool erased = list.erase(1);
+    std::cout << "¿Se borró índice 1? " << (erased ? "Sí" : "No") << std::endl;
+    std::cout << "Lista después de erase(1): ";
+    list.print();
+    std::cout << "Tamaño: " << list.size() << std::endl;
 
-    DoublyLinkedList<int> list2(list1);
+    // Test copy constructor
+    std::cout << "\n=== Test copy constructor ===" << std::endl;
+    LinkedList<int> listCopy = list;
+    std::cout << "Copia: ";
+    listCopy.print();
 
-    std::cout << "List2:\n";
-    list2.print();
+    // Test move constructor
+    std::cout << "\n=== Test move constructor ===" << std::endl;
+    LinkedList<int> listMove = std::move(listCopy);
+    std::cout << "Move: ";
+    listMove.print();
+    std::cout << "Original después de move (vacía): "
+              << (listCopy.empty() ? "Sí" : "No") << std::endl;
 
-    std::cout << "\n=== Modifying original list1 ===\n";
-
-    list1.pushBack(999);
-
-    std::cout << "List1:\n";
-    list1.print();
-
-    std::cout << "\nList2 should remain unchanged:\n";
-    list2.print();
-
-    std::cout << "\n=== Testing Copy Assignment ===\n";
-
-    DoublyLinkedList<int> list3;
-
-    list3.pushBack(100);
-    list3.pushBack(200);
-
-    std::cout << "List3 before assignment:\n";
-    list3.print();
-
-    list3 = list1;
-
-    std::cout << "\nList3 after assignment:\n";
-    list3.print();
-
-    std::cout << "\n=== Testing Move Constructor ===\n";
-
-    DoublyLinkedList<int> list4(std::move(list1));
-
-    std::cout << "List4 after move:\n";
-    list4.print();
-
-    std::cout << "\nList1 after being moved-from:\n";
-    list1.print();
-
-    std::cout << "\n=== Testing Move Assignment ===\n";
-
-    DoublyLinkedList<int> list5;
-
-    list5.pushBack(777);
-    list5.pushBack(888);
-
-    std::cout << "List5 before move assignment:\n";
-    list5.print();
-
-    list5 = std::move(list2);
-
-    std::cout << "\nList5 after move assignment:\n";
-    list5.print();
-
-    std::cout << "\nList2 after being moved-from:\n";
-    list2.print();
-
-    std::cout << "\n=== End of program ===\n";
+    // Test empty
+    std::cout << "\n=== Test clear ===" << std::endl;
+    LinkedList<int> tempList;
+    tempList.pushBack(1);
+    tempList.pushBack(2);
+    tempList.pushBack(3);
+    std::cout << "Antes de clear: ";
+    tempList.print();
+    tempList.clear();
+    std::cout << "¿Está vacía? " << (tempList.empty() ? "Sí" : "No")
+              << std::endl;
 
     return 0;
 }
