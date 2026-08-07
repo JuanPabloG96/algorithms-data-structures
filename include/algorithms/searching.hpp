@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace algo
+namespace search
 {
 template <typename T>
 int linear_search(const std::vector<T>& arr, const T& value)
@@ -66,4 +66,4 @@ int interpolation_search(const std::vector<T>& arr, const T& value)
     }
     return -1;
 }
-} // namespace algo
+} // namespace search
