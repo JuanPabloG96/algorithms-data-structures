@@ -1,100 +1,175 @@
-#include "data_structures/LinkedList.hpp"
+#include "data_structures/Vector.hpp"
+
+#include <cassert>
+#include <iostream>
+#include <string>
+
+// Clase auxiliar para rastrear construcciones, copias, movimientos y
+// destrucciones
+struct ElementoPrueba
+{
+    std::string nombre;
+
+    ElementoPrueba() : nombre("Por defecto")
+    {
+        std::cout << "  [Construido por defecto]\n";
+    }
+
+    ElementoPrueba(std::string n) : nombre(std::move(n))
+    {
+        std::cout << "  [Construido con valor: " << nombre << "]\n";
+    }
+
+    ElementoPrueba(const ElementoPrueba& otro) : nombre(otro.nombre)
+    {
+        std::cout << "  [Copiado: " << nombre << "]\n";
+    }
+
+    ElementoPrueba(ElementoPrueba&& otro) noexcept
+        : nombre(std::move(otro.nombre))
+    {
+        std::cout << "  [Movido: " << nombre << "]\n";
+    }
+
+    ~ElementoPrueba()
+    {
+        std::cout << "  [Destruido: "
+                  << (nombre.empty() ? "Objeto movido" : nombre) << "]\n";
+    }
+
+    ElementoPrueba& operator=(const ElementoPrueba& otro)
+    {
+        nombre = otro.nombre;
+        std::cout << "  [Asignacion por copia: " << nombre << "]\n";
+        return *this;
+    }
+
+    ElementoPrueba& operator=(ElementoPrueba&& otro) noexcept
+    {
+        nombre = std::move(otro.nombre);
+        std::cout << "  [Asignacion por movimiento: " << nombre << "]\n";
+        return *this;
+    }
+};
+
+void probarInsercionYRealloc()
+{
+    std::cout << "========================================\n";
+    std::cout << "1. PRUEBA DE pushBack Y REALLOCATE\n";
+    std::cout << "========================================\n";
+
+    Vector<int> vec;
+    std::cout << "Capacidad inicial: " << vec.Capacity()
+              << " | Size: " << vec.Size() << "\n";
+
+    vec.pushBack(10);
+    vec.pushBack(20);
+    std::cout << "Capacidad tras 2 elementos: " << vec.Capacity()
+              << " | Size: " << vec.Size() << "\n";
+
+    // Debe disparar reallocate a capacidad 4
+    vec.pushBack(30);
+    std::cout << "Capacidad tras 3 elementos: " << vec.Capacity()
+              << " | Size: " << vec.Size() << "\n";
+
+    std::cout << "Contenido del vector: ";
+    for (size_t i = 0; i < vec.Size(); ++i)
+    {
+        std::cout << vec[i] << " ";
+    }
+    std::cout << "\n\n";
+}
+
+void probarCicloDeVidaObjetos()
+{
+    std::cout << "========================================\n";
+    std::cout << "2. PRUEBA DE CICLO DE VIDA (Move vs Copy)\n";
+    std::cout << "========================================\n";
+
+    Vector<ElementoPrueba> vec;
+
+    std::cout << "-- Insercion por lvalue (Copia) --\n";
+    ElementoPrueba p1("ElementoA");
+    vec.pushBack(p1);
+
+    std::cout << "\n-- Insercion por rvalue (Movimiento) --\n";
+    vec.pushBack(ElementoPrueba("ElementoB"));
+
+    std::cout << "\n-- Realloc provocado por un 3er elemento --\n";
+    vec.pushBack(ElementoPrueba("ElementoC"));
+
+    std::cout << "\n-- Eliminando ultimo elemento con popBack --\n";
+    vec.popBack();
+
+    std::cout << "\n-- Limpieza al salir de ambito --\n";
+}
+
+void probarCopiaYMovimientoVector()
+{
+    std::cout << "========================================\n";
+    std::cout << "3. PRUEBA DE COPIA Y MOVIMIENTO DE VECTOR\n";
+    std::cout << "========================================\n";
+
+    Vector<std::string> original;
+    original.pushBack("C++");
+    original.pushBack("Data Structures");
+
+    std::cout << "-- Constructor de Copia --\n";
+    Vector<std::string> copia = original;
+    std::cout << "Copia[0]: " << copia[0] << " | Original[0]: " << original[0]
+              << "\n";
+
+    std::cout << "\n-- Constructor de Movimiento --\n";
+    Vector<std::string> movido = std::move(original);
+    std::cout << "Movido Size: " << movido.Size() << "\n";
+    std::cout << "Original despues de move - Size: " << original.Size()
+              << " | Data: "
+              << (original.Data() == nullptr ? "nullptr" : "Valido") << "\n\n";
+}
+
+void probarIteradoresYExcepciones()
+{
+    std::cout << "========================================\n";
+    std::cout << "4. PRUEBA DE ITERADORES Y EXCEPCIONES\n";
+    std::cout << "========================================\n";
+
+    Vector<int> vec;
+    vec.pushBack(100);
+    vec.pushBack(200);
+    vec.pushBack(300);
+
+    std::cout << "Uso de Range-based for loop (begin/end):\n";
+    for (const auto& val : vec)
+    {
+        std::cout << val << " ";
+    }
+    std::cout << "\n\nFront: " << vec.front() << " | Back: " << vec.back()
+              << "\n";
+
+    std::cout << "\nProbando at() dentro de limites: " << vec.at(1) << "\n";
+
+    std::cout << "Probando at() fuera de limites (debe lanzar excepcion):\n";
+    try
+    {
+        vec.at(10) = 500;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cout << "Excepcion capturada con exito: " << e.what() << "\n";
+    }
+    std::cout << "\n";
+}
 
 int main()
 {
-    LinkedList<int> list;
+    probarInsercionYRealloc();
+    probarCicloDeVidaObjetos();
+    probarCopiaYMovimientoVector();
+    probarIteradoresYExcepciones();
 
-    // Test pushBack
-    std::cout << "=== Test pushBack ===" << std::endl;
-    list.pushBack(10);
-    list.pushBack(20);
-    list.pushBack(30);
-    list.pushBack(40);
-    std::cout << "Lista después de pushBack: ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test pushFront
-    std::cout << "\n=== Test pushFront ===" << std::endl;
-    list.pushFront(5);
-    std::cout << "Lista después de pushFront(5): ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test insert
-    std::cout << "\n=== Test insert ===" << std::endl;
-    list.insert(2, 15);
-    std::cout << "Lista después de insert(2, 15): ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test contains
-    std::cout << "\n=== Test contains ===" << std::endl;
-    std::cout << "¿Contiene 20? " << (list.contains(20) ? "Sí" : "No")
-              << std::endl;
-    std::cout << "¿Contiene 100? " << (list.contains(100) ? "Sí" : "No")
-              << std::endl;
-
-    // Test find
-    std::cout << "\n=== Test find ===" << std::endl;
-    if (list.find(15))
-        std::cout << "Encontrado: 15" << std::endl;
-
-    // Test removeFront
-    std::cout << "\n=== Test removeFront ===" << std::endl;
-    list.removeFront();
-    std::cout << "Lista después de removeFront: ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test removeBack
-    std::cout << "\n=== Test removeBack ===" << std::endl;
-    list.removeBack();
-    std::cout << "Lista después de removeBack: ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test remove (por valor)
-    std::cout << "\n=== Test remove ===" << std::endl;
-    bool removed = list.remove(15);
-    std::cout << "¿Se removió 15? " << (removed ? "Sí" : "No") << std::endl;
-    std::cout << "Lista después de remove(15): ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test erase (por índice)
-    std::cout << "\n=== Test erase ===" << std::endl;
-    bool erased = list.erase(1);
-    std::cout << "¿Se borró índice 1? " << (erased ? "Sí" : "No") << std::endl;
-    std::cout << "Lista después de erase(1): ";
-    list.print();
-    std::cout << "Tamaño: " << list.size() << std::endl;
-
-    // Test copy constructor
-    std::cout << "\n=== Test copy constructor ===" << std::endl;
-    LinkedList<int> listCopy = list;
-    std::cout << "Copia: ";
-    listCopy.print();
-
-    // Test move constructor
-    std::cout << "\n=== Test move constructor ===" << std::endl;
-    LinkedList<int> listMove = std::move(listCopy);
-    std::cout << "Move: ";
-    listMove.print();
-    std::cout << "Original después de move (vacía): "
-              << (listCopy.empty() ? "Sí" : "No") << std::endl;
-
-    // Test empty
-    std::cout << "\n=== Test clear ===" << std::endl;
-    LinkedList<int> tempList;
-    tempList.pushBack(1);
-    tempList.pushBack(2);
-    tempList.pushBack(3);
-    std::cout << "Antes de clear: ";
-    tempList.print();
-    tempList.clear();
-    std::cout << "¿Está vacía? " << (tempList.empty() ? "Sí" : "No")
-              << std::endl;
+    std::cout << "========================================\n";
+    std::cout << "TODAS LAS PRUEBAS COMPLETADAS\n";
+    std::cout << "========================================\n";
 
     return 0;
 }
